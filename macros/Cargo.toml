@@ -1,0 +1,15 @@
+[package]
+name = "avkeys-macros"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+quote = "1.0.23"
+proc-macro2 = "1.0.51"
+syn   = {version = "1.0.107", features = ["full"]}
+regex = "1.7.1"
+lazy_static = "1.4.0"
+avkeys-common = { path = "../common" }
+
+[lib]
+proc-macro = true
