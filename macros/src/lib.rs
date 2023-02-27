@@ -46,8 +46,8 @@ use syn::{spanned::Spanned, ItemFn, punctuated::Punctuated, Token, parse_macro_i
 /// * [/usr/include/linux/input-event-codes.h]
 /// * [mirror @ FreeDesktop.org](https://gitlab.freedesktop.org/libinput/libinput/-/blob/main/include/linux/linux/input-event-codes.h).
 ///
-/// Though technically case-insensitive, we recommend using PascalCase (uppercase camelCase)
-/// for key names: e.g. "Ctrl" over "CTRL", "ctrl".
+/// All keys should use PascalCase (uppercase camelCase)
+/// for key names: e.g. "Ctrl" over "CTRL" and/or "ctrl".
 ///
 /// ##### Aliases
 /// 
@@ -90,7 +90,7 @@ use syn::{spanned::Spanned, ItemFn, punctuated::Punctuated, Token, parse_macro_i
 /// /// Pet the cute kitty-cat `times` amount of times.
 /// ///
 /// #[AvKeybind(Ctrl+Shift+{d})]
-/// pub fn PetKitty(state : &mut (...), times : DigitParameter) {
+/// pub fn PetKitty(state : &mut (...), times : d) {
 ///     for i in 1..(times.value()) {
 ///         println!("Petted the kitty: {times}");
 ///     }
