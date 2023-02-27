@@ -78,6 +78,7 @@ mod tests {
 
     #[test]
     fn test_lookup_const() {
+        const k : Keys = Keys::lookup_const('-').unwrap();
         println!("{k:?}");
     }
 }
