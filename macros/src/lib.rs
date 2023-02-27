@@ -379,7 +379,7 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
                     let raw_byte_str = syn::LitByteStr::new(s.as_bytes(), span);
 
                     quote! {
-                        #raw_byte_str => Some(Self::#p)
+                        #raw_byte_str => Some(Self::#p),
                     }
                 })
         });
@@ -409,7 +409,7 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
         .filter_map(|k| k)
         .map(|(i, p)| {
             quote! {
-                #i => Some(Self::#p)
+                #i => Some(Self::#p),
             }
         });
 
@@ -438,7 +438,7 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
         .filter_map(|k| k)
         .map(|(c, p)| {
             quote! {
-                #c => Some(Self::#p)
+                #c => Some(Self::#p),
             }
         });
 
@@ -470,15 +470,15 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             
                 match a {
                     ::avkeys_common::AvKeyDiscrim::Str(s) => match s.as_bytes() {
-                        #(#lookup_str),*,
+                        #(#lookup_str)*
                         _ => None
                     },
                     ::avkeys_common::AvKeyDiscrim::Int(i) => match i {
-                        #(#lookup_ints),*,
+                        #(#lookup_ints)*
                         _ => None
                     },
                     ::avkeys_common::AvKeyDiscrim::Char(c) => match c {
-                        #(#lookup_chars),*,
+                        #(#lookup_chars)*
                         _ => None
                     }
                 }

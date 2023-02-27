@@ -133,7 +133,7 @@ impl ParsedKey {
             ParsedKey::Code(_, int) => {
                 let s = int.span();
                 quote_spanned! {
-                    s => ::avkeys_common::AvKey::Key(int)
+                    s => ::avkeys_common::AvKey::Key(#int)
                 }
             },
             ParsedKey::Parameter(b, ident) => {
