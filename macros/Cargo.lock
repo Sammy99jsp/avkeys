@@ -12,9 +12,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "avkeys-common"
+version = "0.1.0"
+dependencies = [
+ "core-macros",
+]
+
+[[package]]
 name = "avkeys-macros"
 version = "0.1.0"
 dependencies = [
+ "avkeys-common",
  "convert_case",
  "lazy_static",
  "proc-macro2",
@@ -30,6 +38,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
 dependencies = [
  "unicode-segmentation",
+]
+
+[[package]]
+name = "core-macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "regex",
+ "syn",
 ]
 
 [[package]]

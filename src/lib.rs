@@ -1,4 +1,4 @@
-#![feature(const_trait_impl, const_cmp, derive_const, const_option)]
+#![feature(const_trait_impl, const_cmp, derive_const, const_option, const_convert)]
 //!
 //! AvdanOS helper library for parsing,
 //! and validating keyboard shortcuts and keys.
@@ -48,17 +48,20 @@ keycodes! {
     /// Digit Key 0
     Digit0   =>  11 match [0, ],
     
+
+
     Minus  =>  12 match ['-', ],
-    Equal  =>  13 match ['=', ],
+
+    Equal  =>  13 match [Equals, '=', ],
     
     Backspace => 14, 
-    
+
     Tab    =>  15,
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::Keys;
+    use crate::Key;
 
     use super::AvKeybind;
 
@@ -67,19 +70,21 @@ mod tests {
         ///
         /// Switches focus to the `i`-th item on the taksbar.
         ///
-        #[AvKeybind(Logo+':'+{d})]
+        #[AvKeybind(Equals+'-'+{d})]
         pub fn SwitchFocusToWindow(state: &mut (), mut i: d) {
             if i == 0 {
-                i = 9;
+                i = 10;
             }
             todo!("Switch focus to taskbar index {i}");
         }
+
     }
 
     #[test]
     fn test_lookup_const() {
-        const k : Keys = Keys::lookup_const('-').unwrap();
+        const k : Key = Key::lookup_const('-').unwrap();
+
+        
         println!("{k:?}");
     }
 }
-

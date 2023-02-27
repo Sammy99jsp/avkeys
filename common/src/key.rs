@@ -19,7 +19,7 @@ pub type KeyCode = u32;
 /// 
 pub enum AvKey {
     ///
-    /// A fixed physical key, using `libinput`'s keycodes.
+    /// A fixed physical key, using linux' keycodes.
     /// 
     Key(KeyCode),
 
@@ -30,7 +30,7 @@ pub enum AvKey {
     /// 
     /// See [AvKeyParameter] for more information.
     /// 
-    Parameter(Box<dyn AvKeyParameter>)
+    Parameter(AvKeyParameter)
 }
 
 ///
@@ -39,31 +39,10 @@ pub enum AvKey {
 /// A way of capturing multiple keys (in the same category) at once,
 /// 
 /// ### Types
-/// The following key parameters come out-of-the-box:
 /// * [Digit Keys](parameters::DigitKey) (`0`..=`9`) `{d}` 
 /// * [Function Keys](parameters::FunctionKey) (`F1`..=`F12`) `{f}` 
 /// 
-pub trait AvKeyParameter {
-    ///
-    /// Returns keys in this KeyParameter's bounds.
-    /// 
-    fn keys(&self) -> &'static [KeyCode];
-
-    ///
-    /// Returns a value associated with a specific key
-    /// by the key parameter.
-    /// 
-    fn value(&self, key : KeyCode) -> Option<usize>;
-}
-
-
-pub mod parameters {
-    //!
-    //! Collection of standard key parameters used in AvdanOS.
-    //! 
-
-    use super::{KeyCode, AvKeyParameter};
-
+pub enum AvKeyParameter {
     ///
     /// ### Key Parameter `{d}` &mdash; Digit Key
     /// Used in place for any digit key (not keypad keys).
@@ -92,26 +71,7 @@ pub mod parameters {
     /// }
     /// ```
     /// 
-    pub struct DigitKey;
-    
-    // Number Keys:                     0   1  2  3  4  5  6  7  8   9    
-    const DIGIT_KEYS : [KeyCode; 10] = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    
-    impl AvKeyParameter for DigitKey {
-        
-        fn keys(&self) -> &'static [KeyCode] { &DIGIT_KEYS }
-        
-        ///
-        /// Returns the number of the digit key  
-        /// that this [key parameter](super::AvKeyParameter) captured (0..=9).
-        /// 
-        fn value(&self, key : KeyCode) -> Option<usize> {
-            DIGIT_KEYS
-                .iter().enumerate()
-                .find(|(_, k)| **k == key)
-                .map(|(i, _)| i)
-        }
-    }
+    DigitKey,
 
     ///
     /// ### Key Parameter `{f}` &mdash; Function Key
@@ -135,27 +95,48 @@ pub mod parameters {
     /// }
     /// ```
     /// 
-    pub struct FunctionKey;
+    FunctionKey
+}
 
-    // Function Keys:                 F..  1   2   3   4   5   6   7   8   9   10  11  12
-    const FUNCTION_KEYS : [KeyCode; 12] = [59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 87, 88];
+// Number Keys:                     0   1  2  3  4  5  6  7  8   9    
+const DIGIT_KEYS : [KeyCode; 10] = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// Function Keys:                 F..  1   2   3   4   5   6   7   8   9   10  11  12
+const FUNCTION_KEYS : [KeyCode; 12] = [59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 87, 88];
 
-    impl AvKeyParameter for FunctionKey {
-        fn keys(&self) -> &'static [KeyCode] { &FUNCTION_KEYS }
 
-        ///
-        /// Returns the number of the function key
-        /// that this [key parameter](super::AvKeyParameter) captured (1..=12).
-        /// 
-        fn value(&self, key : KeyCode) -> Option<usize> {
-            DIGIT_KEYS
-                .iter().enumerate()
-                .find(|(_, k)| **k == key)
-                .map(|(i, _)| i + 1)
+impl AvKeyParameter {
+    ///
+    /// Returns keys in this KeyParameter's bounds.
+    /// 
+    fn keys(&self) -> &'static [KeyCode] {
+        match self {
+            AvKeyParameter::DigitKey => &DIGIT_KEYS,
+            AvKeyParameter::FunctionKey => &FUNCTION_KEYS,
         }
     }
 
+    ///
+    /// Returns a value associated with a specific key
+    /// by the key parameter.
+    /// 
+    fn value(&self, key : KeyCode) -> Option<usize> {
+        match self {
+            AvKeyParameter::DigitKey => {
+                DIGIT_KEYS
+                    .iter().enumerate()
+                    .find(|(_, k)| **k == key)
+                    .map(|(i, _)| i)
+            },
+            AvKeyParameter::FunctionKey => {
+                FUNCTION_KEYS
+                    .iter().enumerate()
+                    .find(|(_, k)| **k == key)
+                    .map(|(i, _)| i + 1)
+            },
+        }
+    }
 }
+
 
 
 impl PartialEq for AvKey {

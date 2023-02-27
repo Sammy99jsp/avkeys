@@ -14,9 +14,11 @@ use std::{slice, iter::empty};
 
 use avkeys_common::{AvKeyDiscrim};
 
+use convert_case::Casing;
 use key::{ParsedKey, ParsedKeybind, KEY_PARAMS};
 use keycode::{ParseKeyCodeDefinition, KeyIdentifier, KeyCodesCollection};
 use proc_macro::{Diagnostic, Level, TokenStream};
+use proc_macro2::Span;
 use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, ItemFn, punctuated::Punctuated, Token, parse_macro_input, parse::Parse, token::Brace, braced};
 
@@ -191,6 +193,12 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
     let params = func.sig.inputs.iter();
     let keybind_name = func.sig.ident;
 
+    let default_keys = keybind.iter()
+        .map(ParsedKey::to_lookup)
+        .collect::<Vec<_>>();
+
+    let default_keys_count = default_keys.len();
+
     let body = func.block;
 
     // FIXME(Sammy99jsp):   Auto-suggestions do not always behave
@@ -204,21 +212,32 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
         }
     });
 
+    let vis = func.vis;
+
+    let keybind_default_const = keybind_name.to_string()
+        .to_case(convert_case::Case::ScreamingSnake) + "_CONST";
+
+    let keybind_default_const = syn::Ident::new(&keybind_default_const, Span::call_site());
+
     quote! {
         #(#attrs)*
-        struct #keybind_name(Option<Vec< ::avkeys_common::AvKey >>);
+        #vis struct #keybind_name(Option<Vec< ::avkeys_common::AvKey >>);
 
-        impl ::avkeys_common::AvKeybind for #keybind_name {
+        const #keybind_default_const : [::avkeys_common::AvKey ; #default_keys_count]= [
+            #(#default_keys),*
+        ];
+
+        impl AvKeybind for #keybind_name {
             fn default_keys() -> &'static [::avkeys_common::AvKey]
                 where Self : Sized
             {
-                todo!("FIXME(Sammy99jsp) inside macro, lol.");
+                &#keybind_default_const
             }
 
             fn keys(&self) -> &[::avkeys_common::AvKey] {
-                &self.0.as_ref()
+                self.0.as_ref()
                     .map(|v| v.as_slice())
-                    .unwrap_or(&[/* Replace this!!! */])
+                    .unwrap_or(Self::default_keys())
             }
 
             fn run(&self, state : &mut (), __params__ : Vec<usize>) {
@@ -423,13 +442,29 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             }
         });
 
+    let ident_lookups = aliases
+        .iter()
+        .flat_map(|k| {
+            let p = k.code();
+            k.aliases()
+                .filter_map(move |a| match a {
+                    KeyIdentifier::Ident(ident) => Some((p, ident)),
+                    _ => None,
+                })
+        })
+        .map(|(code, ident)| {
+            quote! {
+                Key::#ident => #code
+            }
+        });
+
     quote! {
         #[derive(Debug, Clone, Copy)]
-        pub enum Keys {
+        pub enum Key {
             #(#definitions)*
         }
 
-        impl Keys {
+        impl Key {
             const fn lookup_const<I : ~const Into< ::avkeys_common::AvKeyDiscrim >>(a : I) -> Option<Self> {
                 let a : avkeys_common::AvKeyDiscrim = a.into();
             
@@ -448,6 +483,14 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
                     }
                 }
             } 
+        }
+
+        impl const From<Key> for ::avkeys_common::KeyCode {
+            fn from(value: Key) -> Self {
+                match value {
+                    #(#ident_lookups),*
+                }
+            }
         }
 
     }.into()

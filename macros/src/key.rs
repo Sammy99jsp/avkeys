@@ -2,15 +2,14 @@ use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
-use proc_macro2::Span;
-use quote::quote;
+use quote::{quote, ToTokens, quote_spanned};
 use syn::{
     braced, bracketed,
     parse::{Parse, ParseBuffer},
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Bracket},
-    LitInt, Signature, Token, TypePath,
+    LitInt, Signature, Token, TypePath, LitChar,
 };
 
 lazy_static! {
@@ -20,20 +19,31 @@ lazy_static! {
     pub static ref KEY_PARAMS: HashMap<&'static str, &'static str> = {
         HashMap::from_iter(
             [
-                ("d", "$crate::KeyParams::DigitKey"),
-                ("f", "$crate::KeyParams::FunctionKey"),
+                ("d", "::avkeys_common::AvKeyParameter::DigitKey"),
+                ("f", "::avkeys_common::AvKeyParameter::FunctionKey"),
             ]
             .into_iter(),
         )
     };
 }
+
+
+///
+/// Possible types used to name a key.
+/// 
+pub enum ParsedKeyDisc {
+    LitInt(LitInt),
+    LitChar(LitChar),
+    Ident(syn::Ident),
+}
+
 ///
 /// AvKey that is being parsed.
 ///
 /// Can either be a Key Name, Key Code, or Key Parameter.
 ///
 pub enum ParsedKey {
-    Name(Span, String),
+    Name(ParsedKeyDisc),
     Code(Bracket, LitInt),
     Parameter(Brace, syn::Ident),
 }
@@ -73,19 +83,19 @@ impl Parse for ParsedKey {
         // Anything else, including LitInt since `1` is a valid keycode identifier.
         if input.peek(syn::LitInt) {
             let int: LitInt = input.parse().unwrap();
-            return Ok(Self::Name(int.span(), int.to_string()));
+            return Ok(Self::Name(ParsedKeyDisc::LitInt(int)));
         }
 
         // Normal identifiers
         if input.peek(syn::Ident) {
             let ident: syn::Ident = input.parse().unwrap();
-            return Ok(Self::Name(ident.span(), ident.to_string()));
+            return Ok(Self::Name(ParsedKeyDisc::Ident(ident)));
         }
 
         // Escaped characters
         if input.peek(syn::LitChar) {
             let char : syn::LitChar = input.parse().unwrap();
-            return Ok(Self::Name(char.span(), char.value().to_string()))
+            return Ok(Self::Name(ParsedKeyDisc::LitChar(char)))
         }
 
 
@@ -97,6 +107,45 @@ impl Parse for ParsedKey {
     }
 }
 
+impl ParsedKey {
+    pub fn to_lookup(&self) -> proc_macro2::TokenStream {
+        match self {
+            ParsedKey::Name(ParsedKeyDisc::Ident(ident)) => {
+                let s = ident.span();
+                quote_spanned! {
+                    s => ::avkeys_common::AvKey::Key(Key::#ident.into())
+                }
+            },
+            ParsedKey::Name(ParsedKeyDisc::LitChar(ch)) => {
+                let s = ch.span();
+                let err_text = format!("Could not find `'{}'` in key aliases list.", ch.value());
+                quote_spanned! {
+                    s => ::avkeys_common::AvKey::Key(Key::lookup_const(#ch).expect(#err_text).into())
+                }
+            },
+            ParsedKey::Name(ParsedKeyDisc::LitInt(int)) => {
+                let s = int.span();
+                let err_text = format!("Could not find `{}` in key aliases list.", int.to_string());
+                quote_spanned! {
+                    s => ::avkeys_common::AvKey::Key(Key::lookup_const(#int).expect(#err_text).into())
+                }
+            },
+            ParsedKey::Code(_, int) => {
+                let s = int.span();
+                quote_spanned! {
+                    s => ::avkeys_common::AvKey::Key(int)
+                }
+            },
+            ParsedKey::Parameter(b, ident) => {
+                let s = b.span;
+                let path = KEY_PARAMS.get(ident.to_string().as_str()).unwrap();
+                let path : syn::Path = syn::parse_str(path).unwrap();
+
+                quote_spanned! { s => ::avkeys_common::AvKey::Parameter(#path) }
+            },
+        }.into_token_stream()
+    }
+}
 ///
 /// Parsed macro representation of AvKeybind.
 ///
