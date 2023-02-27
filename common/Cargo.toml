@@ -3,4 +3,7 @@ name = "avkeys-common"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+core-macros = { path = "../core_macros" }
+
 [lib]
