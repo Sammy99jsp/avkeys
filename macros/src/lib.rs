@@ -20,7 +20,7 @@ use keycode::{ParseKeyCodeDefinition, KeyIdentifier, KeyCodesCollection};
 use proc_macro::{Diagnostic, Level, TokenStream};
 use proc_macro2::Span;
 use quote::{quote, quote_spanned};
-use syn::{spanned::Spanned, ItemFn, punctuated::Punctuated, Token, parse_macro_input, parse::Parse, token::Brace, braced};
+use syn::{spanned::Spanned, ItemFn, punctuated::Punctuated, Token, parse_macro_input, parse::Parse, token::{Brace, Paren}, braced, parenthesized};
 
 // FIXME(Sammy99jsp) Broken link - the Wiki page below (Key Name Aliases) does not exist yet!
 
@@ -271,10 +271,14 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
 /// | `KeyDiscrim` *(Optional)* | Any of: a char literal; an integer literal; an identifier. Adding a char or int literal will add a case to the `TryFrom` of this enum | `';'`, `','`, `12`, `0x56`, `Ident` |
 /// 
 /// #### Rustdoc
-/// This macro will auto-generate code documentation for
-/// any key aliases.
+/// keycodes! speaks Rustdoc!
 /// 
-/// Any original `///` rustdoc comments will be kept.
+/// Rustdoc is supported:
+/// * For the auto-generated enum itself (use inner rustdoc `//!`)
+/// * For specific keys (use outer rustdoc on the keys `///`) 
+/// 
+/// This macro will auto-generate code documentation for
+/// any key aliases into a new section.
 /// 
 /// In the future, this macro may also export these alias definitions
 /// to an external file for auto-gen'd end user documentation.
@@ -287,8 +291,23 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
 /// ### Example
 /// ```ignore
 /// keycodes! {
+///     //!
+///     //! Test Keycodes implementation
+///     //!
+///     
+///     ///
+///     /// Escape key.
+///     ///
 ///     Escape => 1 match [Esc, ]
+/// 
+///     ///
+///     /// The number 1
+///     ///
 ///     Digit1 => 2 match [1, '1'],
+///     
+///     ///
+///     /// The number 10
+///     ///
 ///     Digit0 => 10,
 /// }
 /// ```
@@ -458,7 +477,19 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             }
         });
 
+    let attrs = aliases.attributes()
+        .map(|a| {
+            let path  = a.path.clone();
+            let args  = a.tokens.clone();
+            let span = a.span();
+
+            quote_spanned! {
+                span => #[#path #args]
+            }
+        });
+
     quote! {
+        #(#attrs)*
         #[derive(Debug, Clone, Copy)]
         pub enum Key {
             #(#definitions)*

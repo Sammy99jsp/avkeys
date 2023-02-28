@@ -12,55 +12,21 @@ pub use avkeys_common::*;
 use avkeys_macros::keycodes;
 
 keycodes! {
+    //! 
+    //! Lol
+    //! 
+    
     ///
-    /// Main modifier key.
+    /// What the actual heck.
     /// 
-    LeftControl  => 12345 match [LCtrl, Ctrl, '⌘'],
-
-    ///
-    /// Toggles the case of a character,
-    /// and gets symbols I guess.
-    /// 
-    LeftShift    => 12343 match [LShift, Shift],
-
-    ///
-    /// Escapes the matrix.
-    /// 
-    /// Yep, it's that easy.
-    /// 
-    Escape       => 1     match [Esc,],
-
-    ///
-    /// Usually the the Windows key.
-    /// 
-    Logo         => 123   match [Win, Windows, ],
-
-    ///
-    /// Period or Dot `.` Key
-    /// 
-    Period       => 2345 match [Dot, ],
+    Ctrl => 2 match [LeftCtl]
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::Key;
+    use crate::AvKeybind;
 
-    use super::AvKeybind;
-
-    #[test]
-    fn test_impl() {
-        ///
-        /// Opens up a windows task manager clone.
-        ///
-        #[AvKeybind(Ctrl+Shift+Esc)]
-        pub fn TaskMonitor(state: &mut ()) {}
-
-        ///
-        /// Cause everyone wants 'em...
-        /// 
-        #[AvKeybind(Win+Dot)]
-        pub fn EmojiPicker(state: &mut ()) {
-
-        }
+    fn test_vec() {
+        let v : Vec<Box<dyn AvKeybind>> = vec![];
     }
 }

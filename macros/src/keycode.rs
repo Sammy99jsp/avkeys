@@ -134,12 +134,14 @@ impl Parse for ParseKeyCodeDefinition {
 }
 
 pub struct KeyCodesCollection {
+    attributes   : Vec<Attribute>,
     contents     : Punctuated<ParseKeyCodeDefinition, Token![,]>
 }
 
 impl Parse for KeyCodesCollection {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
+            attributes  : input.call(Attribute::parse_inner)?,
             contents    : input.parse_terminated(ParseKeyCodeDefinition::parse)?,
         })
     }
@@ -147,6 +149,10 @@ impl Parse for KeyCodesCollection {
 
 
 impl KeyCodesCollection {
+    pub fn attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes.iter()
+    }
+    
     pub fn iter(&self) -> impl Iterator<Item = &ParseKeyCodeDefinition> {
         self.contents.iter()
     }
