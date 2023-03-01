@@ -23,10 +23,4 @@ keycodes! {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::AvKeybind;
-
-    fn test_vec() {
-        let v : Vec<Box<dyn AvKeybind>> = vec![];
-    }
-}
+mod tests {}

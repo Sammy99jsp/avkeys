@@ -108,7 +108,7 @@ impl AvKeyParameter {
     ///
     /// Returns keys in this KeyParameter's bounds.
     /// 
-    fn keys(&self) -> &'static [KeyCode] {
+    pub fn keys(&self) -> &'static [KeyCode] {
         match self {
             AvKeyParameter::DigitKey => &DIGIT_KEYS,
             AvKeyParameter::FunctionKey => &FUNCTION_KEYS,
@@ -119,7 +119,7 @@ impl AvKeyParameter {
     /// Returns a value associated with a specific key
     /// by the key parameter.
     /// 
-    fn value(&self, key : KeyCode) -> Option<usize> {
+    pub fn value(&self, key : KeyCode) -> Option<usize> {
         match self {
             AvKeyParameter::DigitKey => {
                 DIGIT_KEYS
