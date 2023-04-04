@@ -496,7 +496,7 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
         }
 
         impl Key {
-            const pub fn lookup<I : ~const Into< ::avkeys_common::AvKeyDiscrim >>(a : I) -> Option<Self> {
+            pub const fn lookup<I : ~const Into< ::avkeys_common::AvKeyDiscrim >>(a : I) -> Option<Self> {
                 let a : avkeys_common::AvKeyDiscrim = a.into();
             
                 match a {
