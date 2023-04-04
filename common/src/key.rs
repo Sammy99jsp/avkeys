@@ -87,7 +87,7 @@ impl AvKey {
 /// * [Digit Keys](parameters::DigitKey) (`0`..=`9`) `{d}` 
 /// * [Function Keys](parameters::FunctionKey) (`F1`..=`F12`) `{f}` 
 /// 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AvKeyParameter {
     ///
     /// ### Key Parameter `{d}` &mdash; Digit Key
