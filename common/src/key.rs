@@ -17,6 +17,7 @@ pub type KeyCode = u32;
 /// * a fixed key, or
 /// * a colllection of keys. 
 /// 
+#[derive(Debug, Clone, Copy)]
 pub enum AvKey {
     ///
     /// A fixed physical key, using linux' keycodes.
@@ -42,6 +43,7 @@ pub enum AvKey {
 /// * [Digit Keys](parameters::DigitKey) (`0`..=`9`) `{d}` 
 /// * [Function Keys](parameters::FunctionKey) (`F1`..=`F12`) `{f}` 
 /// 
+#[derive(Debug, Clone, Copy)]
 pub enum AvKeyParameter {
     ///
     /// ### Key Parameter `{d}` &mdash; Digit Key

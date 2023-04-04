@@ -191,3 +191,13 @@ keycodes! {
 
     /* Keys 226..=248 Omitted */
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Key;
+
+    #[test]
+    fn tmp() {
+        const k : Key = Key::lookup_const(';').unwrap();
+    }
+}
