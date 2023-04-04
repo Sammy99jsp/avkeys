@@ -10,7 +10,7 @@
 mod key;
 mod keycode;
 
-use std::{slice, iter::empty};
+use std::{slice, iter::{empty, self}};
 
 use avkeys_common::{AvKeyDiscrim};
 
@@ -488,6 +488,27 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             }
         });
 
+    let ident_names_str = aliases
+        .iter()
+        .map(|key_def| {
+            let ident = match key_def.primary() {
+                KeyIdentifier::LitInt(_) => unreachable!(),
+                KeyIdentifier::Ident(ident) => ident,
+                KeyIdentifier::LitChar(_) => unreachable!(),
+            };
+
+            let aliases = key_def.aliases()
+                .filter_map(|alias| match alias {
+                    KeyIdentifier::LitInt(_) => None,
+                    KeyIdentifier::Ident(ident) => Some(ident.to_string()),
+                    KeyIdentifier::LitChar(c) => Some(c.value().to_string()),
+                });
+
+            quote!{
+                #ident => vec![#(#aliases),*]
+            }
+        });
+
     quote! {
         #(#attrs)*
         #[derive(Debug, Clone, Copy)]
@@ -514,6 +535,12 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
                     }
                 }
             } 
+            
+            pub const fn name(&self) -> Vec<&'static str> {
+                match self {
+                    #(#ident_names_str),*
+                }
+            }
         }
 
         impl const From<Key> for ::avkeys_common::KeyCode {

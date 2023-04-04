@@ -10,6 +10,7 @@ pub use avkeys_macros::AvKeybind;
 
 pub use avkeys_common::*;
 use avkeys_macros::keycodes;
+use colored::Colorize;
 
 keycodes! {
     //! 
@@ -195,6 +196,39 @@ keycodes! {
 impl Into<AvKey> for Key {
     fn into(self) -> AvKey {
         AvKey::Key(self.into())
+    }
+}
+
+impl TryInto<String> for AvKey {
+    type Error = ();
+
+    fn try_into(&self) -> Result<String, Self::Error> {
+        match self {
+            AvKey::Key(k) => Key::lookup(k)
+                .map(
+                    |k| k.name().into_iter()
+                        .min_by_key(|n| n.len())
+                        .unwrap().into()
+                )
+                .map(|n| Ok((n)))
+                .unwrap_or(Err(())),
+            AvKey::Parameter(a) => Ok(a.to_string()),
+        }
+    }
+}
+
+impl std::fmt::Display for AvKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            AvKey::Key(k) => Key::lookup(k)
+                .and_then(|k|{
+                    k.try_into()
+                        .ok()
+                        .map(|n : String| n.blue())
+                })
+                .unwrap_or("ERR".strikethrough().red()),
+            AvKey::Parameter(p) => format!("{{{}}}", p.to_string()).yellow(),
+        })
     }
 }
 
