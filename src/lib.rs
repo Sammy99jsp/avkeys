@@ -198,6 +198,6 @@ mod tests {
 
     #[test]
     fn tmp() {
-        const k : Key = Key::lookup_const(';').unwrap();
+        const k : Key = Key::lookup(';').unwrap();
     }
 }
