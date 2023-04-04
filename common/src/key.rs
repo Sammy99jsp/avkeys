@@ -183,6 +183,22 @@ impl AvKeyParameter {
     }
 }
 
+impl From<AvKeyParameter> for String {
+    fn from(p: AvKeyParameter) -> Self {
+        match p {
+            AvKeyParameter::DigitKey => "d",
+            AvKeyParameter::FunctionKey => "F",
+        }
+        .to_string()
+    }
+}
+
+impl ToString for AvKeyParameter {
+    fn to_string(&self) -> String {
+        <Self as Into<String>>::into(self.clone())
+    }
+}
+
 
 
 impl PartialEq for AvKey {
