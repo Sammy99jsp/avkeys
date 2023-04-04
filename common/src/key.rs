@@ -187,9 +187,21 @@ impl From<AvKeyParameter> for String {
     fn from(p: AvKeyParameter) -> Self {
         match p {
             AvKeyParameter::DigitKey => "d",
-            AvKeyParameter::FunctionKey => "F",
+            AvKeyParameter::FunctionKey => "f",
         }
         .to_string()
+    }
+}
+
+impl TryFrom<String> for AvKeyParameter {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.as_str() {
+            "d" => Ok(AvKeyParameter::DigitKey),
+            "f" => Ok(AvKeyParameter::FunctionKey),
+            _   => Err(value)
+        }
     }
 }
 
