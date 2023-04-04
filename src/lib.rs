@@ -192,6 +192,12 @@ keycodes! {
     /* Keys 226..=248 Omitted */
 }
 
+impl Into<AvKey> for Key {
+    fn into(self) -> AvKey {
+        AvKey::Key(self.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Key;
