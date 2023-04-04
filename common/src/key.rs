@@ -34,6 +34,50 @@ pub enum AvKey {
     Parameter(AvKeyParameter)
 }
 
+impl AvKey {
+    ///
+    /// Returns an option of whether this [AvKey] is a
+    /// key parameter ([AvKeyParameter]).
+    /// 
+    /// ### Example
+    /// ```ignore
+    /// let keys = vec![AvKey::Key(2), AvKey::Parameter(AvKeyParameter::DigitKey)];
+    /// let key_params = keys.into_iter()
+    ///     .filter_map(AvKey::key_parameter)
+    ///     .collect::<Vec<_>>();
+    /// 
+    /// assert_eq!(key_params, vec![AvKey::Parameter(AvKeyParameter::DigitKey)]);
+    /// ```
+    /// 
+    pub fn key_parameter(&self) -> Option<AvKeyParameter> {
+        match self {
+            AvKey::Key(_) => None,
+            AvKey::Parameter(p) => Some(p.clone()),
+        }
+    }
+
+    ///
+    /// Returns an option of wether this [AvKey] is
+    /// a real key (has a keycode).
+    ///
+    /// ### Example
+    /// ```ignore
+    /// let keys = vec![AvKey::Key(2), AvKey::Parameter(AvKeyParameter::DigitKey)];
+    /// let real_keys = keys.into_iter()
+    ///     .filter_map(AvKey::key)
+    ///     .collect::<Vec<_>>();
+    ///
+    /// assert_eq!(real_keys, vec![AvKey::Key(2)]);
+    /// ```
+    ///
+    pub fn key(&self) -> Option<KeyCode> {
+        match self {
+            AvKey::Key(k) => Some(*k),
+            AvKey::Parameter(_) => None,
+        }
+    }
+}
+
 ///
 /// ## Key Parameters
 /// 
