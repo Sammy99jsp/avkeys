@@ -10,3 +10,4 @@ edition = "2021"
 avkeys-macros = { path = "./macros" }
 avkeys-common = { path = "./common" }
 input = "0.8.2"
+colored       = "2.0.0"
