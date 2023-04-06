@@ -10,17 +10,15 @@
 mod key;
 mod keycode;
 
-use std::{slice, iter::{empty, self}};
-
-use avkeys_common::{AvKeyDiscrim};
+use std::iter;
 
 use convert_case::Casing;
-use key::{ParsedKey, ParsedKeybind, KEY_PARAMS};
-use keycode::{ParseKeyCodeDefinition, KeyIdentifier, KeyCodesCollection};
+use key::{ParsedKey, ParsedKeybind};
+use keycode::{KeyIdentifier, KeyCodesCollection};
 use proc_macro::{Diagnostic, Level, TokenStream};
 use proc_macro2::Span;
 use quote::{quote, quote_spanned};
-use syn::{spanned::Spanned, ItemFn, punctuated::Punctuated, Token, parse_macro_input, parse::Parse, token::{Brace, Paren}, braced, parenthesized};
+use syn::{spanned::Spanned, ItemFn};
 
 // FIXME(Sammy99jsp) Broken link - the Wiki page below (Key Name Aliases) does not exist yet!
 
@@ -190,7 +188,7 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
     // Keep original rustdoc comments by
     //      also relaying the original attributes macros (aka `#[doc = "..."]`).
     let attrs = func.attrs.iter();
-    let params = func.sig.inputs.iter();
+    // let params = func.sig.inputs.iter();
     let keybind_name = func.sig.ident;
 
     let default_keys = keybind.iter()
@@ -324,7 +322,7 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
     let definitions = aliases
         .iter()
         .flat_map(|k| {
-            let code = k.code();
+            // let code = k.code();
             let pri = k.primary();
             
             k.aliases().map(|alias| {
@@ -362,10 +360,10 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
                         }
                         
                     },
-                    KeyIdentifier::LitInt(i) => {
+                    KeyIdentifier::LitInt(_) => {
                         quote! {}
                     },
-                    KeyIdentifier::LitChar(char) => {
+                    KeyIdentifier::LitChar(_) => {
                         quote! {}
                     },
                 }
@@ -405,30 +403,16 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
     
     let lookup_ints = aliases
         .iter()
-        .flat_map(|k| {
-            let p = match k.primary() {
-                KeyIdentifier::LitInt(i) => {
-                    i.span().unwrap().error("Expected an identifier here").emit();
-                    panic!();
-                },
-                KeyIdentifier::Ident(iden) => iden,
-                KeyIdentifier::LitChar(c) => {
-                    c.span().unwrap().error("Expected an identifier here").emit();
-                    panic!();
-                },
+        .map(|k| {
+            let code = k.code();
+            let ident = match k.primary() {
+                KeyIdentifier::LitInt(_) => unreachable!(),
+                KeyIdentifier::Ident(ident) => ident,
+                KeyIdentifier::LitChar(_) => unreachable!(),
             };
 
-            k.aliases()
-                .map(move |a| match a {
-                    KeyIdentifier::LitInt(i) => Some((i, p)),
-                    KeyIdentifier::Ident(_) => None,
-                    KeyIdentifier::LitChar(_) => None,
-                })
-        })
-        .filter_map(|k| k)
-        .map(|(i, p)| {
             quote! {
-                #i => Some(Self::#p),
+                #code => Some(Self::#ident),
             }
         });
 
@@ -461,17 +445,27 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             }
         });
 
-    let ident_lookups = aliases
+    let idents = aliases
         .iter()
         .flat_map(|k| {
             let p = k.code();
+            let names = k.aliases()
+                .filter_map(|alias| match alias {
+                    KeyIdentifier::LitInt(_) => None,
+                    KeyIdentifier::Ident(ident) => Some(ident.to_string()),
+                    KeyIdentifier::LitChar(c) => Some(c.value().to_string()),
+                }).collect::<Vec<_>>(); 
+
             k.aliases()
                 .filter_map(move |a| match a {
-                    KeyIdentifier::Ident(ident) => Some((p, ident)),
+                    KeyIdentifier::Ident(ident) => Some((p, ident, names.clone())),
                     _ => None,
                 })
-        })
-        .map(|(code, ident)| {
+        }).collect::<Vec<_>>();
+
+    let ident_lookups = 
+        idents.iter()
+        .map(|(code, ident, _)| {
             quote! {
                 Key::#ident => #code
             }
@@ -488,25 +482,10 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             }
         });
 
-    let ident_names_str = aliases
+    let ident_names_str = idents
         .iter()
-        .map(|key_def| {
-            let ident = match key_def.primary() {
-                KeyIdentifier::LitInt(_) => unreachable!(),
-                KeyIdentifier::Ident(ident) => ident,
-                KeyIdentifier::LitChar(_) => unreachable!(),
-            };
-
-            let aliases = key_def.aliases()
-                .filter_map(|alias| match alias {
-                    KeyIdentifier::LitInt(_) => None,
-                    KeyIdentifier::Ident(ident) => Some(ident.to_string()),
-                    KeyIdentifier::LitChar(c) => Some(c.value().to_string()),
-                });
-
-            quote!{
-                #ident => vec![#(#aliases),*]
-            }
+        .map(|(_, ident, names)| quote! {
+            Self::#ident => vec![#(#names),*] 
         });
 
     quote! {
@@ -536,16 +515,16 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
                 }
             } 
             
-            pub const fn name(&self) -> Vec<&'static str> {
+            pub fn name(&self) -> Vec<&'static str> {
                 match self {
                     #(#ident_names_str),*
                 }
             }
         }
 
-        impl const From<Key> for ::avkeys_common::KeyCode {
-            fn from(value: Key) -> Self {
-                match value {
+        impl Into<::avkeys_common::KeyCode> for Key {
+            fn into(self) -> ::avkeys_common::KeyCode {
+                match self {
                     #(#ident_lookups),*
                 }
             }

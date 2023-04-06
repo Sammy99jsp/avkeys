@@ -6,9 +6,10 @@
 //! See rexeports for more information.
 //!
 
-pub use avkeys_macros::AvKeybind;
+mod key;
 
-pub use avkeys_common::*;
+pub use avkeys_macros::AvKeybind;
+pub use key::{AvKey, AvKeyParameter, KeyCode};
 use avkeys_macros::keycodes;
 use colored::Colorize;
 
@@ -199,32 +200,22 @@ impl Into<AvKey> for Key {
     }
 }
 
-impl TryInto<String> for AvKey {
-    type Error = ();
-
-    fn try_into(&self) -> Result<String, Self::Error> {
-        match self {
-            AvKey::Key(k) => Key::lookup(k)
-                .map(
-                    |k| k.name().into_iter()
-                        .min_by_key(|n| n.len())
-                        .unwrap().into()
-                )
-                .map(|n| Ok((n)))
-                .unwrap_or(Err(())),
-            AvKey::Parameter(a) => Ok(a.to_string()),
-        }
+impl ToString for Key {
+    fn to_string(&self) -> String {
+        self.name()
+            .iter()
+            .min_by_key(|n| n.len())
+            .unwrap()
+            .to_string()
     }
 }
 
 impl std::fmt::Display for AvKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", match self {
-            AvKey::Key(k) => Key::lookup(k)
+            AvKey::Key(k) => Key::lookup(*k)
                 .and_then(|k|{
-                    k.try_into()
-                        .ok()
-                        .map(|n : String| n.blue())
+                    Some(k.to_string().blue())
                 })
                 .unwrap_or("ERR".strikethrough().red()),
             AvKey::Parameter(p) => format!("{{{}}}", p.to_string()).yellow(),
@@ -232,12 +223,28 @@ impl std::fmt::Display for AvKey {
     }
 }
 
+impl TryInto<String> for AvKey {
+    type Error = ();
+
+    fn try_into(self) -> Result<String, Self::Error> {
+        match self {
+            AvKey::Key(k) => Key::lookup(k)
+                .map(|k| Ok(k.to_string()))
+                .unwrap_or(Err(())),
+            AvKey::Parameter(p) => Ok(p.to_string()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::AvKey;
+
     use crate::Key;
 
     #[test]
-    fn tmp() {
-        const k : Key = Key::lookup(';').unwrap();
+    fn to_string_try_test() {
+        let k : AvKey = Key::lookup("LeftCtrl").unwrap().into();
+        println!("{k}");
     }
 }

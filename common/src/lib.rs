@@ -4,19 +4,18 @@
 //! AvKey macro system, and library. 
 //! 
 
-pub use key::*;
-mod key;
 pub mod codes;
 
+pub type KeyCode = u32;
 
 pub enum AvKeyDiscrim {
     Str(&'static str),
     Char(char),
-    Int(i32),
+    Int(u32),
 }
 
-impl const From<i32> for AvKeyDiscrim {
-    fn from(value: i32) -> Self {
+impl const From<u32> for AvKeyDiscrim {
+    fn from(value: u32) -> Self {
         Self::Int(value)
     }
 }
@@ -32,4 +31,3 @@ impl const From<char> for AvKeyDiscrim {
         Self::Char(value)
     }
 }
-
