@@ -14,26 +14,36 @@ pub use parsed_key::*;
 
 pub type KeyCode = u32;
 
-pub enum AvKeyDiscrim {
-    Str(&'static str),
+pub enum AvKeyDiscrim<'a> {
+    Str(&'a str),
     Char(char),
     Int(u32),
 }
 
-impl const From<u32> for AvKeyDiscrim {
+impl const From<u32> for AvKeyDiscrim<'_> {
     fn from(value: u32) -> Self {
         Self::Int(value)
     }
 }
 
-impl const From<&'static str> for AvKeyDiscrim {
-    fn from(value: &'static str) -> Self {
+impl<'a> const From<&'a str> for AvKeyDiscrim<'a> {
+    fn from(value: &'a str) -> Self {
         Self::Str(value)
     }
 }
 
-impl const From<char> for AvKeyDiscrim {
+impl const From<char> for AvKeyDiscrim<'_> {
     fn from(value: char) -> Self {
         Self::Char(value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::AvKeyDiscrim;
+
+    #[test]
+    fn avkey_discrim() {
+        let a = AvKeyDiscrim::Str("sdfgh");
     }
 }
