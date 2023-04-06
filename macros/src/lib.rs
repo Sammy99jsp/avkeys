@@ -7,13 +7,10 @@
 
 #![feature(proc_macro_diagnostic, iter_intersperse, proc_macro_span)]
 
-mod key;
 mod keycode;
 
-use std::iter;
-
 use convert_case::Casing;
-use key::{ParsedKey, ParsedKeybind};
+use ::avkeys_common::{ParsedKey, ParsedKeybind};
 use keycode::{KeyIdentifier, KeyCodesCollection};
 use proc_macro::{Diagnostic, Level, TokenStream};
 use proc_macro2::Span;
@@ -161,7 +158,7 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
 
     // 2b (i) Validate Key Parameter Names
     match keybind.validate_parameter_names() {
-        Some(err) => return err,
+        Some(err) => return err.into(),
         None => {}
     };
 
@@ -170,7 +167,7 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
     // 2b (ii) Validate Key Parameters are in function signature
     //         Ensure all key parameters are present in the function signature.
     match keybind.validate_func_sign_against_key_params(&func.sig) {
-        Some(err) => return err,
+        Some(err) => return err.into(),
         None => {}
     };
 
@@ -179,7 +176,7 @@ pub fn AvKeybind(attrs: TokenStream, body: TokenStream) -> TokenStream {
     // 3a. Generate key parameter bindings
     let pre_assignments: proc_macro2::TokenStream =
         match keybind.generate_key_parameter_assignments(&func.sig) {
-            Err(err) => return err,
+            Err(err) => return err.into(),
             Ok(stuff) => stuff,
         }
         .into();

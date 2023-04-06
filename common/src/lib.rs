@@ -6,6 +6,12 @@
 
 pub mod codes;
 
+#[cfg(feature = "parsing")]
+pub mod parsed_key;
+
+#[cfg(feature = "parsing")]
+pub use parsed_key::*;
+
 pub type KeyCode = u32;
 
 pub enum AvKeyDiscrim {

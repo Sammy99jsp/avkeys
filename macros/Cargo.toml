@@ -9,7 +9,7 @@ proc-macro2 = "1.0.51"
 syn   = {version = "1.0.107", features = ["full"]}
 regex = "1.7.1"
 lazy_static = "1.4.0"
-avkeys-common = { path = "../common" }
+avkeys-common = { path = "../common", features = [ "parsing" ] }
 convert_case = "0.6.0"
 
 [lib]

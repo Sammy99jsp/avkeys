@@ -37,6 +37,11 @@ name = "avkeys-common"
 version = "0.1.0"
 dependencies = [
  "core-macros",
+ "lazy_static",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "syn",
 ]
 
 [[package]]

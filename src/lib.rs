@@ -13,6 +13,9 @@ pub use key::{AvKey, AvKeyParameter, KeyCode};
 use avkeys_macros::keycodes;
 use colored::Colorize;
 
+#[cfg(feature = "parsing")]
+pub use ::avkeys_common::{ParsedKey, ParsedKeyDisc, ParsedKeybind,  ParsedKeyDisc};
+
 keycodes! {
     //! 
     //! Keycodes from the linux header file:

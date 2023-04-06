@@ -3,7 +3,15 @@ name = "avkeys-common"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+parsing = ["dep:syn", "dep:regex", "dep:quote", "dep:lazy_static", "dep:proc-macro2"]
+
 [dependencies]
 core-macros = { path = "../core_macros" }
+syn   = {version = "1.0.107", features = ["full"], optional = true}
+regex = {version = "1.7.1", optional = true}
+quote = {version = "1.0.23", optional = true}
+lazy_static = {version ="1.4.0", optional = true}
+proc-macro2 = {version ="1.0.51",  optional = true}
 
 [lib]
