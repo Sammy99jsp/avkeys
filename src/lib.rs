@@ -14,7 +14,7 @@ use avkeys_macros::keycodes;
 use colored::Colorize;
 
 #[cfg(feature = "parsing")]
-pub use ::avkeys_common::{ParsedKey, ParsedKeyDisc, ParsedKeybind,  ParsedKeyDisc};
+pub use ::avkeys_common::{ParsedKey, ParsedKeyDisc, ParsedKeybind,};
 
 keycodes! {
     //! 
