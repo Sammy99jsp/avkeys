@@ -20,19 +20,40 @@ pub enum AvKeyDiscrim<'a> {
     Int(u32),
 }
 
-impl const From<u32> for AvKeyDiscrim<'_> {
+#[const_trait]
+pub trait IntoAvKeyDiscrim<'a> {
+    fn into_discrim(self) -> AvKeyDiscrim<'a>;
+}
+
+impl<'a> IntoAvKeyDiscrim<'a> for u32 {
+    fn into_discrim(self) -> AvKeyDiscrim<'a> {
+        AvKeyDiscrim::Int(self)
+    }
+}
+impl<'a> IntoAvKeyDiscrim<'a> for &'a str {
+    fn into_discrim(self) -> AvKeyDiscrim<'a> {
+        AvKeyDiscrim::Str(self)
+    }
+}
+impl<'a> IntoAvKeyDiscrim<'a> for char {
+    fn into_discrim(self) -> AvKeyDiscrim<'a> {
+        AvKeyDiscrim::Char(self)
+    }
+}
+
+
+impl<'a> From<u32> for AvKeyDiscrim<'a> {
     fn from(value: u32) -> Self {
         Self::Int(value)
     }
 }
-
-impl<'a> const From<&'a str> for AvKeyDiscrim<'a> {
+impl<'a> From<&'a str> for AvKeyDiscrim<'a> {
     fn from(value: &'a str) -> Self {
         Self::Str(value)
     }
 }
 
-impl const From<char> for AvKeyDiscrim<'_> {
+impl From<char> for AvKeyDiscrim<'_> {
     fn from(value: char) -> Self {
         Self::Char(value)
     }

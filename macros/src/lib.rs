@@ -492,9 +492,13 @@ pub fn keycodes(body : TokenStream) -> TokenStream {
             #(#definitions)*
         }
 
+        use avkeys_common::IntoAvKeyDiscrim;
+
+
         impl Key {
-            pub const fn lookup<'a, I : ~const Into< ::avkeys_common::AvKeyDiscrim<'a> >>(a : I) -> Option<Self> {
-                let a : avkeys_common::AvKeyDiscrim = a.into();
+
+            pub const fn lookup<'a, I : ~const IntoAvKeyDiscrim<'a>>(a : I) -> Option<Self> {
+                let a : avkeys_common::AvKeyDiscrim = IntoAvKeyDiscrim::into_discrim(a);
             
                 match a {
                     ::avkeys_common::AvKeyDiscrim::Str(s) => match s.as_bytes() {

@@ -1,4 +1,4 @@
-#![feature(const_trait_impl, const_cmp, derive_const, const_option, const_convert)]
+#![feature(const_trait_impl, derive_const, const_option)]
 //!
 //! AvdanOS helper library for parsing,
 //! and validating keyboard shortcuts and keys.
@@ -8,6 +8,7 @@
 
 mod key;
 
+use avkeys_common::AvKeyDiscrim;
 pub use avkeys_macros::AvKeybind;
 pub use key::{AvKey, AvKeyParameter, KeyCode};
 use avkeys_macros::keycodes;
@@ -15,6 +16,18 @@ use colored::Colorize;
 
 #[cfg(feature = "parsing")]
 pub use ::avkeys_common::{ParsedKey, ParsedKeyDisc, ParsedKeybind,};
+
+#[const_trait]
+pub trait IntoAvKey : Into<AvKey> {
+    fn into_key(self) -> AvKey;
+}
+#[const_trait]
+pub trait TryIntoAvKey {
+    type Error;
+    fn try_into_key(self) -> Result<AvKey, Self::Error>;
+}
+
+
 
 keycodes! {
     //! 
@@ -199,6 +212,11 @@ keycodes! {
 
 impl Into<AvKey> for Key {
     fn into(self) -> AvKey {
+        AvKey::Key(self.into())
+    }
+}
+impl IntoAvKey for Key {
+    fn into_key(self) -> AvKey {
         AvKey::Key(self.into())
     }
 }
